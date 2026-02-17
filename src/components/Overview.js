@@ -1,0 +1,57 @@
+import React from 'react';
+import { Button, Col, Form, Row } from 'react-bootstrap';
+import OverviewCard from './OverviewCard';
+import { useExpenseModal } from '../context/ExpenseModalContext';
+
+const Overview = ({ totalExpenses = 0, userIncome = 0, month = '', handleMonthChange }) => {
+  const { handleShow } = useExpenseModal();
+  const balance = Number(userIncome) - Number(totalExpenses);
+  const formatCurrency = (value) => `$${Number(value).toLocaleString()}`;
+
+  return (
+    <div className="overview">
+      <h4 className="overview-hd heading">OVERVIEW</h4>
+      <Row className="align-items-end">
+        <Col xs={12} md={6} className="mb-2 mb-md-0">
+          <Form.Control
+            id="monthFilter"
+            type="month"
+            value={month}
+            onChange={handleMonthChange}
+          />
+        </Col>
+        <Col xs={12} md={6} className="text-md-end">
+          <Button variant="primary" onClick={handleShow}>
+            Add Expense
+          </Button>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col xs={12} md={4}>
+          <OverviewCard
+            cardIcon="https://img.icons8.com/?size=100&id=19411&format=png&color=000000"
+            cardText={formatCurrency(totalExpenses)}
+            cardTitle="Expenses"
+          />
+        </Col>
+        <Col xs={12} md={4}>
+          <OverviewCard
+            cardIcon="https://img.icons8.com/?size=100&id=Rk2gq7DfvP4z&format=png&color=000000"
+            cardText={formatCurrency(userIncome)}
+            cardTitle="Monthly Income"
+          />
+        </Col>
+        <Col xs={12} md={4}>
+          <OverviewCard
+            cardIcon="https://img.icons8.com/?size=100&id=23877&format=png&color=000000"
+            cardText={formatCurrency(balance)}
+            cardTitle="Balance"
+          />
+        </Col>
+      </Row>
+    </div>
+  );
+};
+
+export default Overview;
