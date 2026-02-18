@@ -9,6 +9,8 @@ const getInitialFormState = (expenseToEdit) => ({
   amount: expenseToEdit?.amount ? String(expenseToEdit.amount) : '',
 });
 
+const MIN_EXPENSE_AMOUNT = 1000;
+
 const ExpenseModal = ({
   mode = 'add',
   expenseToEdit = null,
@@ -18,6 +20,9 @@ const ExpenseModal = ({
   onHide,
 }) => {
   const { show: contextShow, handleClose: contextHandleClose } = useExpenseModal();
+  const categories = Array.isArray(expenseCategories)
+    ? expenseCategories
+    : expenseCategories?.categories || [];
   const show = typeof showProp === 'boolean' ? showProp : contextShow;
   const handleClose = onHide || contextHandleClose;
   const [validated, setValidated] = React.useState(false);
@@ -38,6 +43,12 @@ const ExpenseModal = ({
     const form = event.currentTarget;
 
     if (!form.checkValidity()) {
+      event.stopPropagation();
+      setValidated(true);
+      return;
+    }
+
+    if (Number(formData.amount) < MIN_EXPENSE_AMOUNT) {
       event.stopPropagation();
       setValidated(true);
       return;
@@ -85,7 +96,7 @@ const ExpenseModal = ({
               onChange={handleChange}
             >
               <option value="">Select category</option>
-              {expenseCategories.map((category) => (
+              {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
                 </option>
@@ -115,14 +126,14 @@ const ExpenseModal = ({
             <Form.Control
               required
               type="number"
-              min="0.01"
-              step="0.01"
+              min={MIN_EXPENSE_AMOUNT}
+              step="1"
               name="amount"
               value={formData.amount}
               onChange={handleChange}
             />
             <Form.Control.Feedback type="invalid">
-              Please provide an amount.
+              Please provide an amount of at least ₦1,000.
             </Form.Control.Feedback>
           </Form.Group>
         </Modal.Body>
@@ -140,3 +151,4 @@ const ExpenseModal = ({
 };
 
 export default ExpenseModal;
+

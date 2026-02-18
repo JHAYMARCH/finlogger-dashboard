@@ -6,7 +6,10 @@ import { useExpenseModal } from '../context/ExpenseModalContext';
 const Overview = ({ totalExpenses = 0, userIncome = 0, month = '', handleMonthChange }) => {
   const { handleShow } = useExpenseModal();
   const balance = Number(userIncome) - Number(totalExpenses);
-  const formatCurrency = (value) => `$${Number(value).toLocaleString()}`;
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(
+      Number(value || 0)
+    );
 
   return (
     <div className="overview">

@@ -2,15 +2,34 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 import {
   expenseCategories as expenseCategoriesData,
   expenseData,
-  expenseSummaryData,
 } from '../data';
 
 const AppContext = createContext(null);
 
+const calculateTotalExpenses = (expenses) =>
+  expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+const buildExpenseSummary = (expenses) => {
+  const total = calculateTotalExpenses(expenses);
+  if (!total) return [];
+
+  const byCategory = expenses.reduce((acc, item) => {
+    const key = item.categoryName || 'Uncategorized';
+    acc[key] = (acc[key] || 0) + Number(item.amount || 0);
+    return acc;
+  }, {});
+
+  return Object.entries(byCategory).map(([categoryName, amount]) => ({
+    categoryName,
+    percentage: `${((amount / total) * 100).toFixed(2)}%`,
+  }));
+};
+
 export const AppProvider = ({ children }) => {
-  const [expenseSummary, setExpenseSummary] = useState(expenseSummaryData);
-  const [expenseDetails, setExpenseDetails] = useState(expenseData.expenses || []);
-  const [totalExpenses, setTotalExpenses] = useState(expenseData.totalExpenses || 0);
+  const initialExpenses = expenseData.expenses || [];
+  const [expenseSummary, setExpenseSummary] = useState(buildExpenseSummary(initialExpenses));
+  const [expenseDetails, setExpenseDetails] = useState(initialExpenses);
+  const [totalExpenses, setTotalExpenses] = useState(calculateTotalExpenses(initialExpenses));
   const [expenseIdToDelete, setExpenseIdToDelete] = useState(null);
   const [expenseCategories, setExpenseCategories] = useState(
     expenseCategoriesData.categories || []
@@ -20,10 +39,11 @@ export const AppProvider = ({ children }) => {
     try {
       const response = await fetch('/api/expenses');
       const data = await response.json();
+      const apiExpenses = data.expenseDetails || data.expenses || expenseData.expenses || [];
 
-      setExpenseSummary(data.expenseSummary || data.summary || expenseSummaryData);
-      setExpenseDetails(data.expenseDetails || data.expenses || expenseData.expenses || []);
-      setTotalExpenses(data.totalExpenses || 0);
+      setExpenseDetails(apiExpenses);
+      setTotalExpenses(calculateTotalExpenses(apiExpenses));
+      setExpenseSummary(buildExpenseSummary(apiExpenses));
     } catch (error) {
       // Keep current state if API is unavailable.
       console.error('Failed to fetch expense data:', error);

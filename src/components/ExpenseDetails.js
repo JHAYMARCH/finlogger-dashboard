@@ -2,9 +2,12 @@ import React from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useExpenseModal } from '../context/ExpenseModalContext';
 
-const ExpenseDetails = ({ expenseDetails = [] }) => {
+const ExpenseDetails = ({ expenseDetails = [], onDeleteClick }) => {
   const { handleShow } = useExpenseModal();
-  const formatCurrency = (value) => `$${Number(value).toLocaleString()}`;
+  const formatCurrency = (value) =>
+    new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(
+      Number(value || 0)
+    );
 
   return (
     <div className="expense-details">
@@ -37,6 +40,15 @@ const ExpenseDetails = ({ expenseDetails = [] }) => {
                     >
                       Edit
                     </Button>
+                    {' '}
+                    <Button
+                      className="delete"
+                      size="sm"
+                      variant="outline-danger"
+                      onClick={() => onDeleteClick(expense._id)}
+                    >
+                      Delete
+                    </Button>
                   </td>
                 </tr>
               ))
@@ -53,3 +65,4 @@ const ExpenseDetails = ({ expenseDetails = [] }) => {
 };
 
 export default ExpenseDetails;
+
