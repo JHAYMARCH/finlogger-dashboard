@@ -9,7 +9,7 @@ const getInitialFormState = (expenseToEdit) => ({
   amount: expenseToEdit?.amount ? String(expenseToEdit.amount) : '',
 });
 
-const MIN_EXPENSE_AMOUNT = 1000;
+const MIN_EXPENSE_AMOUNT = 0;
 
 const ExpenseModal = ({
   mode = 'add',
@@ -133,7 +133,7 @@ const ExpenseModal = ({
               onChange={handleChange}
             />
             <Form.Control.Feedback type="invalid">
-              Please provide an amount of at least ₦1,000.
+              Please provide an amount of at least ₦0.
             </Form.Control.Feedback>
           </Form.Group>
         </Modal.Body>
