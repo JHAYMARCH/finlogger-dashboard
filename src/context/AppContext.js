@@ -1,8 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   expenseCategories as expenseCategoriesData,
   expenseData,
 } from '../data';
+import { getCategories, getExpenses } from '../api/persistenceApi';
 
 const AppContext = createContext(null);
 
@@ -37,9 +38,7 @@ export const AppProvider = ({ children }) => {
 
   const fetchExpenseData = useCallback(async () => {
     try {
-      const response = await fetch('/api/expenses');
-      const data = await response.json();
-      const apiExpenses = data.expenseDetails || data.expenses || expenseData.expenses || [];
+      const apiExpenses = await getExpenses();
 
       setExpenseDetails(apiExpenses);
       setTotalExpenses(calculateTotalExpenses(apiExpenses));
@@ -52,14 +51,18 @@ export const AppProvider = ({ children }) => {
 
   const fetchExpenseCategories = useCallback(async () => {
     try {
-      const response = await fetch('/api/category');
-      const data = await response.json();
-      setExpenseCategories(data.categories || expenseCategoriesData.categories || []);
+      const categories = await getCategories();
+      setExpenseCategories(categories || expenseCategoriesData.categories || []);
     } catch (error) {
       // Keep current state if API is unavailable.
       console.error('Failed to fetch expense categories:', error);
     }
   }, []);
+
+  useEffect(() => {
+    fetchExpenseData();
+    fetchExpenseCategories();
+  }, [fetchExpenseData, fetchExpenseCategories]);
 
   const value = useMemo(
     () => ({

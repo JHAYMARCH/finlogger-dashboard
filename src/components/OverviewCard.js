@@ -3,7 +3,7 @@ import { Card } from 'react-bootstrap';
 
 const OverviewCard = ({ cardIcon, cardText, cardTitle }) => {
   return (
-    <Card>
+    <Card className="overview-card">
       <Card.Body>
         <div className="d-flex align-items-center">
           {cardIcon ? <img src={cardIcon} alt={cardTitle} /> : null}

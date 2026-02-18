@@ -11,6 +11,7 @@ const Header = () => {
           </Col>
           <Col xs={12} md={6}>
             <p className="tagline mb-0">Your financial diary!</p>
+            <div className="data-status-badge">Data saved locally</div>
           </Col>
         </Row>
       </Container>

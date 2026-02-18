@@ -2,8 +2,15 @@ import React from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import OverviewCard from './OverviewCard';
 import { useExpenseModal } from '../context/ExpenseModalContext';
+import incomeIcon from '../assets/income-icon.svg';
 
-const Overview = ({ totalExpenses = 0, userIncome = 0, month = '', handleMonthChange }) => {
+const Overview = ({
+  totalExpenses = 0,
+  userIncome = 0,
+  month = '',
+  handleMonthChange,
+  handleIncomeChange,
+}) => {
   const { handleShow } = useExpenseModal();
   const balance = Number(userIncome) - Number(totalExpenses);
   const formatCurrency = (value) =>
@@ -15,7 +22,7 @@ const Overview = ({ totalExpenses = 0, userIncome = 0, month = '', handleMonthCh
     <div className="overview">
       <h4 className="overview-hd heading">OVERVIEW</h4>
       <Row className="align-items-end">
-        <Col xs={12} md={6} className="mb-2 mb-md-0">
+        <Col xs={12} md={4} className="mb-2 mb-md-0">
           <Form.Control
             id="monthFilter"
             type="month"
@@ -23,7 +30,18 @@ const Overview = ({ totalExpenses = 0, userIncome = 0, month = '', handleMonthCh
             onChange={handleMonthChange}
           />
         </Col>
-        <Col xs={12} md={6} className="text-md-end">
+        <Col xs={12} md={4} className="mb-2 mb-md-0">
+          <Form.Control
+            id="incomeField"
+            type="number"
+            min="0"
+            step="1"
+            value={userIncome}
+            onChange={handleIncomeChange}
+            placeholder="Enter monthly income"
+          />
+        </Col>
+        <Col xs={12} md={4} className="text-md-end">
           <Button variant="primary" onClick={handleShow}>
             Add Expense
           </Button>
@@ -40,7 +58,7 @@ const Overview = ({ totalExpenses = 0, userIncome = 0, month = '', handleMonthCh
         </Col>
         <Col xs={12} md={4}>
           <OverviewCard
-            cardIcon="https://img.icons8.com/?size=100&id=Rk2gq7DfvP4z&format=png&color=000000"
+            cardIcon={incomeIcon}
             cardText={formatCurrency(userIncome)}
             cardTitle="Monthly Income"
           />

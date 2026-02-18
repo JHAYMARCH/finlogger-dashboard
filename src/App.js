@@ -10,6 +10,13 @@ import ExpenseModal from './components/ExpenseModal';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { ExpenseModalProvider, useExpenseModal } from './context/ExpenseModalContext';
+import {
+  addExpense,
+  deleteExpense,
+  getIncome,
+  saveIncome,
+  updateExpense,
+} from './api/persistenceApi';
 
 const buildExpenseSummary = (expenses) => {
   const total = expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
@@ -29,7 +36,7 @@ const buildExpenseSummary = (expenses) => {
 
 export const AppContent = () => {
   const [month, setMonth] = React.useState('2020-01');
-  const [userIncome] = React.useState(450000);
+  const [userIncome, setUserIncome] = React.useState(450000);
   const [showDM, setShowDM] = React.useState(false);
 
   const {
@@ -43,8 +50,23 @@ export const AppContent = () => {
   } = useAppContext();
   const { modalMode, selectedExpense } = useExpenseModal();
 
+  React.useEffect(() => {
+    const loadIncome = async () => {
+      const persistedIncome = await getIncome();
+      setUserIncome(persistedIncome);
+    };
+    loadIncome();
+  }, []);
+
   const handleMonthChange = (event) => {
     setMonth(event.target.value);
+  };
+
+  const handleIncomeChange = (event) => {
+    const nextValue = Number(event.target.value);
+    const safeIncome = Number.isNaN(nextValue) ? 0 : nextValue;
+    setUserIncome(safeIncome);
+    saveIncome(safeIncome);
   };
 
   const filteredExpenseDetails = React.useMemo(
@@ -67,36 +89,31 @@ export const AppContent = () => {
     [filteredExpenseDetails]
   );
 
-  const handleExpenseSubmit = (submittedExpense) => {
+  const handleExpenseSubmit = async (submittedExpense) => {
     const formattedDate = new Date(submittedExpense.date).toISOString();
+    const submittedMonth = formattedDate.slice(0, 7);
 
     if (modalMode === 'edit' && selectedExpense?._id) {
-      const updatedExpenses = expenseDetails.map((expense) =>
-        expense._id === selectedExpense._id
-          ? {
-              ...expense,
-              ...submittedExpense,
-              date: formattedDate,
-            }
-          : expense
-      );
+      const updatedExpenses = await updateExpense(selectedExpense._id, {
+        ...submittedExpense,
+        date: formattedDate,
+      });
 
       setExpenseDetails(updatedExpenses);
       setTotalExpenses(updatedExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
       setExpenseSummary(buildExpenseSummary(updatedExpenses));
+      setMonth(submittedMonth);
       return;
     }
 
-    const newExpense = {
-      _id: `expense-${Date.now()}`,
+    const updatedExpenses = await addExpense({
       ...submittedExpense,
       date: formattedDate,
-    };
-
-    const updatedExpenses = [newExpense, ...expenseDetails];
+    });
     setExpenseDetails(updatedExpenses);
     setTotalExpenses(updatedExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
     setExpenseSummary(buildExpenseSummary(updatedExpenses));
+    setMonth(submittedMonth);
   };
 
   const handleDeleteRequest = (expenseId) => {
@@ -109,13 +126,13 @@ export const AppContent = () => {
     setExpenseIdToDelete(null);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!expenseIdToDelete) {
       handleDMClose();
       return;
     }
 
-    const updatedExpenses = expenseDetails.filter((expense) => expense._id !== expenseIdToDelete);
+    const updatedExpenses = await deleteExpense(expenseIdToDelete);
     setExpenseDetails(updatedExpenses);
     setTotalExpenses(updatedExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0));
     setExpenseSummary(buildExpenseSummary(updatedExpenses));
@@ -137,6 +154,7 @@ export const AppContent = () => {
             userIncome={userIncome}
             month={month}
             handleMonthChange={handleMonthChange}
+            handleIncomeChange={handleIncomeChange}
           />
         </Col>
       </Row>

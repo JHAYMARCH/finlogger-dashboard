@@ -2,7 +2,6 @@ import React from 'react';
 import { Table } from 'react-bootstrap';
 
 const ExpenseSummary = ({ data = [] }) => {
-  console.log('ExpenseSummary data length:', data.length);
   return (
     <div className="expense-summary">
       <h4 className="heading">Expense Summary</h4>
